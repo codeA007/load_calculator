@@ -69,14 +69,24 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
               ? Center(child: Text(_error!))
               : group == null
                   ? const Center(child: Text('Group not found'))
-                  : ListView(
-                      children: [
-                        LoadGroupHeader(group: group),
-                        ...group.items.map(
-                          (item) => LoadGroupItemTile(item: item),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
+                  : ListView.separated(
+                      itemCount: group.items.length + 1,
+                      separatorBuilder: (_, index) {
+                        if (index == 0) {
+                          return const SizedBox.shrink();
+                        }
+                        return const Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                        );
+                      },
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return LoadGroupHeader(group: group);
+                        }
+                        return LoadGroupItemTile(item: group.items[index - 1]);
+                      },
                     ),
     );
   }

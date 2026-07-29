@@ -7,8 +7,12 @@ import '../../models/part.dart';
 import '../../providers/calculator_provider.dart';
 import '../../providers/load_groups_provider.dart';
 import '../../providers/parts_provider.dart';
+import '../../theme/app_theme.dart';
+import '../../utils/furnace_calculator.dart';
 import '../../widgets/calc_line_item_tile.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/empty_state_view.dart';
+import '../../widgets/furnace_summary_panel.dart';
 import '../../widgets/part_search_field.dart';
 import '../parts/parts_list_screen.dart';
 
@@ -23,10 +27,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   Part? _selectedPart;
   final _quantityController = TextEditingController(text: '1');
   static final _weightFormat = NumberFormat('#,##0.###');
+  static final _heatFormat = NumberFormat('0.00');
 
   @override
   void initState() {
     super.initState();
+    _quantityController.addListener(() => setState(() {}));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PartsProvider>().refreshCount();
     });
@@ -38,6 +44,15 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     super.dispose();
   }
 
+  double? get _pendingQuantity {
+    final qtyText = _quantityController.text.trim().replaceAll(',', '');
+    final quantity = double.tryParse(qtyText);
+    if (quantity == null || quantity <= 0) {
+      return null;
+    }
+    return quantity;
+  }
+
   void _addToLoad() {
     final part = _selectedPart;
     if (part == null) {
@@ -47,9 +62,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       return;
     }
 
-    final qtyText = _quantityController.text.trim().replaceAll(',', '');
-    final quantity = double.tryParse(qtyText);
-    if (quantity == null || quantity <= 0) {
+    final quantity = _pendingQuantity;
+    if (quantity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Enter a valid quantity greater than 0')),
       );
@@ -79,7 +93,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             controller: nameController,
             decoration: const InputDecoration(
               labelText: 'Group name',
-              border: OutlineInputBorder(),
             ),
             autofocus: true,
             textCapitalization: TextCapitalization.sentences,
@@ -151,50 +164,72 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     }
   }
 
+  Widget? _buildPreviewChip(CalculatorProvider calculator) {
+    final part = _selectedPart;
+    final quantity = _pendingQuantity;
+    if (part == null || quantity == null) {
+      return null;
+    }
+
+    final addedWeight = part.weightKg * quantity;
+    final newTotal = calculator.grandTotal + addedWeight;
+    final newHeats = FurnaceCalculator.heatsRequired(newTotal);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.furnaceAmber.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppTheme.furnaceAmber.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 18,
+            color: AppTheme.furnaceAmber.withValues(alpha: 0.9),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Adds ${_weightFormat.format(addedWeight)} kg → '
+              'total ${_weightFormat.format(newTotal)} kg → '
+              '${_heatFormat.format(newHeats)} furnace heats',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.furnaceAmber.withValues(alpha: 0.95),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final partsCount = context.watch<PartsProvider>().partsCount;
     final calculator = context.watch<CalculatorProvider>();
-    final theme = Theme.of(context);
 
     if (partsCount == 0) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Calculate Load')),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.inventory_2_outlined,
-                  size: 64,
-                  color: theme.colorScheme.outline,
+        appBar: AppBar(title: const Text('Furnace Calculator')),
+        body: EmptyStateView(
+          icon: Icons.inventory_2_outlined,
+          title: 'No parts in library',
+          message: 'Add parts before calculating furnace load.',
+          action: FilledButton.icon(
+            onPressed: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (_) => const PartsListScreen(),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'No parts in library',
-                  style: theme.textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Add parts before calculating load weight.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (_) => const PartsListScreen(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.inventory_2_outlined),
-                  label: const Text('Go to Parts Library'),
-                ),
-              ],
-            ),
+              );
+            },
+            icon: const Icon(Icons.inventory_2_outlined),
+            label: const Text('Go to Parts Library'),
           ),
         ),
       );
@@ -202,7 +237,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calculate Load'),
+        title: const Text('Furnace Calculator'),
         actions: [
           if (calculator.lineItems.isNotEmpty)
             IconButton(
@@ -216,65 +251,77 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                PartSearchField(
-                  onPartSelected: (part) {
-                    setState(() => _selectedPart = part);
-                  },
-                ),
-                if (_selectedPart != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    'Selected: ${_selectedPart!.partNo} '
-                    '(${_weightFormat.format(_selectedPart!.weightKg)} kg)',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-                const SizedBox(height: 12),
-                Row(
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _quantityController,
-                        decoration: const InputDecoration(
-                          labelText: 'Quantity',
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[0-9.,]'),
-                          ),
-                        ],
+                    PartSearchField(
+                      onPartSelected: (part) {
+                        setState(() => _selectedPart = part);
+                      },
+                    ),
+                    if (_selectedPart != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Selected: ${_selectedPart!.partNo} '
+                        '(${_weightFormat.format(_selectedPart!.weightKg)} kg)',
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
+                    ],
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _quantityController,
+                            decoration: const InputDecoration(
+                              labelText: 'Quantity',
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9.,]'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        FilledButton(
+                          onPressed: _addToLoad,
+                          child: const Text('Add'),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    FilledButton(
-                      onPressed: _addToLoad,
-                      child: const Text('Add'),
-                    ),
+                    if (_buildPreviewChip(calculator) != null) ...[
+                      const SizedBox(height: 12),
+                      _buildPreviewChip(calculator)!,
+                    ],
                   ],
                 ),
-              ],
+              ),
             ),
           ),
           const Divider(height: 1),
           Expanded(
             child: calculator.lineItems.isEmpty
-                ? Center(
-                    child: Text(
-                      'Add parts to see weight breakdown',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+                ? const EmptyStateView(
+                    icon: Icons.local_fire_department_outlined,
+                    title: 'No items added',
+                    message:
+                        'Search for a part, enter quantity, and tap Add to see furnace heats required.',
                   )
-                : ListView.builder(
+                : ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: calculator.lineItems.length,
+                    separatorBuilder: (_, _) => const Divider(
+                      height: 1,
+                      indent: 16,
+                      endIndent: 16,
+                    ),
                     itemBuilder: (context, index) {
                       final item = calculator.lineItems[index];
                       return CalcLineItemTile(
@@ -290,40 +337,11 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   ),
           ),
           if (calculator.lineItems.isNotEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer,
-                border: Border(
-                  top: BorderSide(color: theme.dividerColor),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Grand Total',
-                    style: theme.textTheme.labelLarge,
-                  ),
-                  Text(
-                    '${_weightFormat.format(calculator.grandTotal)} kg',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '${calculator.lineItems.length} line item(s)',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton.icon(
-                    onPressed: _saveGroup,
-                    icon: const Icon(Icons.save_outlined),
-                    label: const Text('Save Group'),
-                  ),
-                ],
-              ),
+            FurnaceSummaryPanel(
+              totalWeightKg: calculator.grandTotal,
+              lineItemCount: calculator.lineItems.length,
+              showSaveButton: true,
+              onSave: _saveGroup,
             ),
         ],
       ),

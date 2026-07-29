@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/load_group.dart';
 import '../../providers/load_groups_provider.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/empty_state_view.dart';
+import '../../widgets/load_group_item_tile.dart';
 import 'group_detail_screen.dart';
 
 class SavedGroupsScreen extends StatefulWidget {
@@ -15,9 +16,6 @@ class SavedGroupsScreen extends StatefulWidget {
 }
 
 class _SavedGroupsScreenState extends State<SavedGroupsScreen> {
-  static final _weightFormat = NumberFormat('#,##0.###');
-  static final _dateFormat = DateFormat('d MMM yyyy, h:mm a');
-
   @override
   void initState() {
     super.initState();
@@ -50,7 +48,6 @@ class _SavedGroupsScreenState extends State<SavedGroupsScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<LoadGroupsProvider>();
-    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -61,42 +58,32 @@ class _SavedGroupsScreenState extends State<SavedGroupsScreen> {
           : provider.error != null
               ? Center(child: Text(provider.error!))
               : provider.groups.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.folder_open_outlined,
-                              size: 64,
-                              color: theme.colorScheme.outline,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No saved groups yet',
-                              style: theme.textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Calculate a load and tap Save Group to store it here.',
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
+                  ? const EmptyStateView(
+                      icon: Icons.folder_open_outlined,
+                      title: 'No saved groups yet',
+                      message:
+                          'Use the Furnace Calculator and tap Save Group to store loads here.',
                     )
                   : ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       itemCount: provider.groups.length,
-                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      separatorBuilder: (_, _) => const Divider(
+                        height: 1,
+                        indent: 16,
+                        endIndent: 16,
+                      ),
                       itemBuilder: (context, index) {
                         final group = provider.groups[index];
                         return ListTile(
-                          title: Text(group.name),
-                          subtitle: Text(
-                            '${_dateFormat.format(group.createdAt)}  •  '
-                            '${_weightFormat.format(group.totalWeightKg)} kg',
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
                           ),
+                          title: Text(
+                            group.name,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Text(formatGroupSubtitle(group)),
                           trailing: PopupMenuButton<String>(
                             onSelected: (value) async {
                               if (value == 'delete') {

@@ -1,14 +1,22 @@
-# Load Calculator
+# Furnace Load Calculator
 
-Offline Flutter app for managing a parts catalog and calculating total load weights. Data is stored locally in SQLite — no internet connection required.
+Offline Flutter app for managing a parts catalog, calculating total melt weight, and determining **furnace heats required**. Data is stored locally in SQLite — no internet connection required.
 
 ## Features
 
 - **Parts library** — add parts manually with part number, optional description, weight (kg), and optional vendor name
 - **Excel import** — bulk import or update parts from `.xlsx` files
-- **Load calculator** — search by part code or description, enter quantity, and view a detailed weight breakdown with grand total
-- **Saved groups** — save a load calculation as a named group with creation date, total weight, and full line-item breakdown
+- **Furnace calculator** — search by part code or description, enter quantity, and view weight breakdown with live furnace heat calculation
+- **Furnace heats** — each furnace melts **270 kg**; heats required = total weight ÷ 270 (shown as decimal, e.g. 450 kg → 1.67 heats)
+- **Saved groups** — save a load calculation as a named group with creation date, total weight, furnace heats, and full line-item breakdown
 - **Offline-first** — all data stored in SQLite on device
+
+## Furnace Heat Calculation
+
+- **Furnace capacity:** 270 kg per heat
+- **Formula:** `furnace heats = total weight (kg) ÷ 270`
+- Displayed to 2 decimal places (e.g. 135 kg = 0.50 heats, 450 kg = 1.67 heats)
+- Updates live as you add or remove parts in the calculator
 
 ## Saved Groups
 
@@ -47,8 +55,8 @@ A sample template is bundled in the app (`assets/templates/parts_template.xlsx`)
 ### Create a release (maintainers)
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
+git tag v1.2.0
+git push origin v1.2.0
 ```
 
 GitHub Actions will build the release APK and attach it to the release automatically.

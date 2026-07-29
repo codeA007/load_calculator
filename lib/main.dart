@@ -5,6 +5,7 @@ import 'providers/calculator_provider.dart';
 import 'providers/load_groups_provider.dart';
 import 'providers/parts_provider.dart';
 import 'screens/home_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const LoadCalculatorApp());
@@ -22,18 +23,9 @@ class LoadCalculatorApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LoadGroupsProvider()),
       ],
       child: MaterialApp(
-        title: 'Load Calculator',
+        title: 'Furnace Load Calculator',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF1565C0),
-            brightness: Brightness.light,
-          ),
-          useMaterial3: true,
-          inputDecorationTheme: const InputDecorationTheme(
-            border: OutlineInputBorder(),
-          ),
-        ),
+        theme: AppTheme.light(),
         home: const HomeScreen(),
       ),
     );

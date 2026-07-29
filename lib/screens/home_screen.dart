@@ -3,12 +3,16 @@ import 'package:provider/provider.dart';
 
 import '../providers/load_groups_provider.dart';
 import '../providers/parts_provider.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_navigation_card.dart';
 import 'calculator/calculator_screen.dart';
 import 'groups/saved_groups_screen.dart';
 import 'parts/parts_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  static const appVersion = '1.2.0';
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -31,100 +35,165 @@ class _HomeScreenState extends State<HomeScreen> {
     final groupsCount = context.watch<LoadGroupsProvider>().groupsCount;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Load Calculator'),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.scale,
-                      size: 48,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Offline Load Weight Calculator',
-                      style: theme.textTheme.titleLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Manage your parts catalog and calculate total load weights with quantity breakdowns.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      '$partsCount parts in library',
-                      style: theme.textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$groupsCount saved groups',
-                      style: theme.textTheme.labelLarge,
-                    ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppTheme.primarySteel,
+                    Color(0xFF2C5364),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const PartsListScreen(),
+              child: Column(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.local_fire_department,
+                      size: 36,
+                      color: AppTheme.furnaceAmber,
+                    ),
                   ),
-                );
-              },
-              icon: const Icon(Icons.inventory_2_outlined),
-              label: const Text('Parts Library'),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Furnace Load Calculator',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Calculate melt weight and furnace heats required\n(270 kg per furnace)',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _StatChip(
+                        icon: Icons.inventory_2_outlined,
+                        label: '$partsCount parts',
+                      ),
+                      const SizedBox(width: 12),
+                      _StatChip(
+                        icon: Icons.folder_open_outlined,
+                        label: '$groupsCount groups',
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-            FilledButton.tonalIcon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const CalculatorScreen(),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  AppNavigationCard(
+                    icon: Icons.inventory_2_outlined,
+                    title: 'Parts Library',
+                    subtitle: 'Add, edit, or import parts with weights',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const PartsListScreen(),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-              icon: const Icon(Icons.calculate_outlined),
-              label: const Text('Calculate Load'),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                  const SizedBox(height: 12),
+                  AppNavigationCard(
+                    icon: Icons.local_fire_department_outlined,
+                    title: 'Furnace Calculator',
+                    subtitle: 'Build a load and see furnace heats required',
+                    iconColor: AppTheme.furnaceAmber,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const CalculatorScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  AppNavigationCard(
+                    icon: Icons.folder_open_outlined,
+                    title: 'Saved Groups',
+                    subtitle: 'View previously saved load calculations',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SavedGroupsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-            FilledButton.tonalIcon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const SavedGroupsScreen(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.folder_open_outlined),
-              label: const Text('Saved Groups'),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                'Version ${HomeScreen.appVersion}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  const _StatChip({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white.withValues(alpha: 0.9)),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.9),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }

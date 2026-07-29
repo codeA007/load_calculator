@@ -40,9 +40,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Load Calculator'), findsOneWidget);
+    expect(find.text('Furnace Load Calculator'), findsOneWidget);
     expect(find.text('Parts Library'), findsOneWidget);
-    expect(find.text('Calculate Load'), findsOneWidget);
+    expect(find.text('Furnace Calculator'), findsOneWidget);
     expect(find.text('Saved Groups'), findsOneWidget);
+    expect(find.text('Version 1.2.0'), findsOneWidget);
   });
 }

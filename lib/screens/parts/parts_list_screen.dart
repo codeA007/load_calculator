@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/parts_provider.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/empty_state_view.dart';
 import 'add_part_screen.dart';
 import 'import_excel_screen.dart';
 
@@ -94,34 +95,14 @@ class _PartsListScreenState extends State<PartsListScreen> {
             )
           else if (provider.parts.isEmpty)
             Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.inventory_2_outlined,
-                        size: 64,
-                        color: Theme.of(context).colorScheme.outline,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        provider.searchQuery.isEmpty
-                            ? 'No parts yet'
-                            : 'No matching parts',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        provider.searchQuery.isEmpty
-                            ? 'Add a part manually or import from Excel.'
-                            : 'Try a different search term.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
+              child: EmptyStateView(
+                icon: Icons.inventory_2_outlined,
+                title: provider.searchQuery.isEmpty
+                    ? 'No parts yet'
+                    : 'No matching parts',
+                message: provider.searchQuery.isEmpty
+                    ? 'Add a part manually or import from Excel.'
+                    : 'Try a different search term.',
               ),
             )
           else
@@ -132,7 +113,14 @@ class _PartsListScreenState extends State<PartsListScreen> {
                 itemBuilder: (context, index) {
                   final part = provider.parts[index];
                   return ListTile(
-                    title: Text(part.partNo),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    title: Text(
+                      part.partNo,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

@@ -21,45 +21,60 @@ class CalcLineItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: ListTile(
-        title: Text(
-          item.part.partNo,
-          style: theme.textTheme.titleMedium,
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (item.part.description != null &&
-                item.part.description!.isNotEmpty)
-              Text(item.part.description!),
-            const SizedBox(height: 4),
-            Text(
-              'Unit: ${_weightFormat.format(item.part.weightKg)} kg  •  '
-              'Qty: ${_weightFormat.format(item.quantity)}',
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.part.partNo,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (item.part.description != null &&
+                    item.part.description!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    item.part.description!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 4),
+                Text(
+                  '${_weightFormat.format(item.part.weightKg)} kg × '
+                  '${_weightFormat.format(item.quantity)}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '${_weightFormat.format(item.lineWeight)} kg',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${_weightFormat.format(item.lineWeight)} kg',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close, size: 20),
-              tooltip: 'Remove',
-              onPressed: onRemove,
-            ),
-          ],
-        ),
-        isThreeLine: item.part.description != null &&
-            item.part.description!.isNotEmpty,
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                tooltip: 'Remove',
+                visualDensity: VisualDensity.compact,
+                onPressed: onRemove,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
