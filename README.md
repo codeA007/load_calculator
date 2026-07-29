@@ -7,7 +7,18 @@ Offline Flutter app for managing a parts catalog and calculating total load weig
 - **Parts library** — add parts manually with part number, optional description, weight (kg), and optional vendor name
 - **Excel import** — bulk import or update parts from `.xlsx` files
 - **Load calculator** — search by part code or description, enter quantity, and view a detailed weight breakdown with grand total
+- **Saved groups** — save a load calculation as a named group with creation date, total weight, and full line-item breakdown
 - **Offline-first** — all data stored in SQLite on device
+
+## Saved Groups
+
+After building a load in the calculator:
+
+1. Tap **Save Group** and enter a name
+2. Open **Saved Groups** from the home screen to browse all saved loads
+3. Each group shows its name, total weight (kg), and **creation date**
+4. Tap a group to view the full part-by-part breakdown
+5. Delete groups you no longer need from the list menu
 
 ## Excel Import Format
 
@@ -36,8 +47,8 @@ A sample template is bundled in the app (`assets/templates/parts_template.xlsx`)
 ### Create a release (maintainers)
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.0
+git push origin v1.1.0
 ```
 
 GitHub Actions will build the release APK and attach it to the release automatically.
@@ -91,7 +102,7 @@ Output: `build/app/outputs/flutter-apk/app-release.apk`
 ```
 lib/
 ├── database/       # SQLite setup
-├── models/         # Part, CalcLineItem
+├── models/         # Part, CalcLineItem, LoadGroup
 ├── providers/      # State management (provider)
 ├── repositories/   # Data access layer
 ├── services/       # Excel import

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:load_calculator/providers/calculator_provider.dart';
+import 'package:load_calculator/providers/load_groups_provider.dart';
 import 'package:load_calculator/providers/parts_provider.dart';
 import 'package:load_calculator/screens/home_screen.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,14 @@ import 'package:provider/provider.dart';
 class _FakePartsProvider extends PartsProvider {
   @override
   int get partsCount => 0;
+
+  @override
+  Future<void> refreshCount() async {}
+}
+
+class _FakeLoadGroupsProvider extends LoadGroupsProvider {
+  @override
+  int get groupsCount => 0;
 
   @override
   Future<void> refreshCount() async {}
@@ -22,6 +31,9 @@ void main() {
             value: _FakePartsProvider(),
           ),
           ChangeNotifierProvider(create: (_) => CalculatorProvider()),
+          ChangeNotifierProvider<LoadGroupsProvider>.value(
+            value: _FakeLoadGroupsProvider(),
+          ),
         ],
         child: const MaterialApp(home: HomeScreen()),
       ),
@@ -31,5 +43,6 @@ void main() {
     expect(find.text('Load Calculator'), findsOneWidget);
     expect(find.text('Parts Library'), findsOneWidget);
     expect(find.text('Calculate Load'), findsOneWidget);
+    expect(find.text('Saved Groups'), findsOneWidget);
   });
 }

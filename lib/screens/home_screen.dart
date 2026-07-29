@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/load_groups_provider.dart';
 import '../providers/parts_provider.dart';
 import 'calculator/calculator_screen.dart';
+import 'groups/saved_groups_screen.dart';
 import 'parts/parts_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PartsProvider>().refreshCount();
+      context.read<LoadGroupsProvider>().refreshCount();
     });
   }
 
@@ -25,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final partsCount = context.watch<PartsProvider>().partsCount;
+    final groupsCount = context.watch<LoadGroupsProvider>().groupsCount;
 
     return Scaffold(
       appBar: AppBar(
@@ -65,6 +69,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       '$partsCount parts in library',
                       style: theme.textTheme.labelLarge,
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$groupsCount saved groups',
+                      style: theme.textTheme.labelLarge,
+                    ),
                   ],
                 ),
               ),
@@ -95,6 +104,21 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               icon: const Icon(Icons.calculate_outlined),
               label: const Text('Calculate Load'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+            const SizedBox(height: 12),
+            FilledButton.tonalIcon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const SavedGroupsScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.folder_open_outlined),
+              label: const Text('Saved Groups'),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),

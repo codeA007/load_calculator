@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/part.dart';
 import '../../providers/calculator_provider.dart';
+import '../../providers/load_groups_provider.dart';
 import '../../providers/parts_provider.dart';
 import '../../widgets/calc_line_item_tile.dart';
 import '../../widgets/confirm_dialog.dart';
@@ -60,6 +61,75 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       _selectedPart = null;
       _quantityController.text = '1';
     });
+  }
+
+  Future<void> _saveGroup() async {
+    final calculator = context.read<CalculatorProvider>();
+    if (calculator.lineItems.isEmpty) {
+      return;
+    }
+
+    final nameController = TextEditingController();
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Save Group'),
+          content: TextField(
+            controller: nameController,
+            decoration: const InputDecoration(
+              labelText: 'Group name',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+            textCapitalization: TextCapitalization.sentences,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (saved != true || !mounted) {
+      nameController.dispose();
+      return;
+    }
+
+    final name = nameController.text.trim();
+    nameController.dispose();
+
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Group name is required')),
+      );
+      return;
+    }
+
+    try {
+      await context.read<LoadGroupsProvider>().saveGroup(
+            name,
+            calculator.lineItems,
+          );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Saved group "$name"')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _clearAll() async {
@@ -245,6 +315,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   Text(
                     '${calculator.lineItems.length} line item(s)',
                     style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: _saveGroup,
+                    icon: const Icon(Icons.save_outlined),
+                    label: const Text('Save Group'),
                   ),
                 ],
               ),
