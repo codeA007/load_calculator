@@ -12,7 +12,7 @@ import 'parts/parts_list_screen.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  static const appVersion = '1.2.0';
+  static const appVersion = '1.2.1';
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

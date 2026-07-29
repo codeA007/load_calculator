@@ -44,6 +44,6 @@ void main() {
     expect(find.text('Parts Library'), findsOneWidget);
     expect(find.text('Furnace Calculator'), findsOneWidget);
     expect(find.text('Saved Groups'), findsOneWidget);
-    expect(find.text('Version 1.2.0'), findsOneWidget);
+    expect(find.text('Version 1.2.1'), findsOneWidget);
   });
 }

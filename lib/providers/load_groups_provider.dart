@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/calc_line_item.dart';
 import '../models/load_group.dart';
+import '../models/part.dart';
 import '../repositories/load_groups_repository.dart';
 
 class LoadGroupsProvider extends ChangeNotifier {
@@ -45,8 +46,18 @@ class LoadGroupsProvider extends ChangeNotifier {
     return _repository.getGroup(id);
   }
 
-  Future<LoadGroup> saveGroup(String name, List<CalcLineItem> lineItems) async {
-    final group = await _repository.saveGroup(name, lineItems);
+  Future<LoadGroup> saveGroup(List<CalcLineItem> lineItems) async {
+    final group = await _repository.saveGroup(lineItems);
+    await loadGroups();
+    return group;
+  }
+
+  Future<LoadGroup> addPartToGroup(
+    int groupId,
+    Part part,
+    double quantity,
+  ) async {
+    final group = await _repository.addPartsToGroup(groupId, part, quantity);
     await loadGroups();
     return group;
   }

@@ -83,57 +83,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       return;
     }
 
-    final nameController = TextEditingController();
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Save Group'),
-          content: TextField(
-            controller: nameController,
-            decoration: const InputDecoration(
-              labelText: 'Group name',
-            ),
-            autofocus: true,
-            textCapitalization: TextCapitalization.sentences,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (saved != true || !mounted) {
-      nameController.dispose();
-      return;
-    }
-
-    final name = nameController.text.trim();
-    nameController.dispose();
-
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Group name is required')),
-      );
-      return;
-    }
-
     try {
-      await context.read<LoadGroupsProvider>().saveGroup(
-            name,
+      final group = await context.read<LoadGroupsProvider>().saveGroup(
             calculator.lineItems,
           );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Saved group "$name"')),
+          SnackBar(content: Text('Saved group "${group.name}"')),
         );
       }
     } catch (e) {
@@ -341,6 +297,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               totalWeightKg: calculator.grandTotal,
               lineItemCount: calculator.lineItems.length,
               showSaveButton: true,
+              compact: true,
               onSave: _saveGroup,
             ),
         ],

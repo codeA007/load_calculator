@@ -258,4 +258,57 @@ class DatabaseHelper {
       whereArgs: [id],
     );
   }
+
+  Future<void> addItemsToLoadGroup(int groupId, List<LoadGroupItem> items) async {
+    if (items.isEmpty) {
+      return;
+    }
+
+    final db = await database;
+    await db.transaction((txn) async {
+      for (final item in items) {
+        await txn.insert(
+          'load_group_items',
+          item.copyWith(groupId: groupId).toMap(),
+        );
+      }
+
+      final sumResult = await txn.rawQuery(
+        'SELECT SUM(line_weight_kg) as total FROM load_group_items WHERE group_id = ?',
+        [groupId],
+      );
+      final total = (sumResult.first['total'] as num?)?.toDouble() ?? 0;
+
+      await txn.update(
+        'load_groups',
+        {'total_weight_kg': total},
+        where: 'id = ?',
+        whereArgs: [groupId],
+      );
+    });
+  }
+
+  Future<void> deleteLoadGroupItem(int itemId, int groupId) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete(
+        'load_group_items',
+        where: 'id = ?',
+        whereArgs: [itemId],
+      );
+
+      final sumResult = await txn.rawQuery(
+        'SELECT SUM(line_weight_kg) as total FROM load_group_items WHERE group_id = ?',
+        [groupId],
+      );
+      final total = (sumResult.first['total'] as num?)?.toDouble() ?? 0;
+
+      await txn.update(
+        'load_groups',
+        {'total_weight_kg': total},
+        where: 'id = ?',
+        whereArgs: [groupId],
+      );
+    });
+  }
 }
