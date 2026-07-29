@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/settings_provider.dart';
 import '../providers/load_groups_provider.dart';
 import '../providers/parts_provider.dart';
 import '../theme/app_theme.dart';
@@ -8,11 +9,12 @@ import '../widgets/app_navigation_card.dart';
 import 'calculator/calculator_screen.dart';
 import 'groups/saved_groups_screen.dart';
 import 'parts/parts_list_screen.dart';
+import 'settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  static const appVersion = '1.2.1';
+  static const appVersion = '1.2.2';
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -33,6 +35,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     final partsCount = context.watch<PartsProvider>().partsCount;
     final groupsCount = context.watch<LoadGroupsProvider>().groupsCount;
+    final furnaceCapacity =
+        context.watch<SettingsProvider>().furnaceCapacityKg;
+    final capacityText = furnaceCapacity == furnaceCapacity.roundToDouble()
+        ? furnaceCapacity.toInt().toString()
+        : furnaceCapacity.toStringAsFixed(1);
 
     return Scaffold(
       body: SafeArea(
@@ -76,8 +83,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Calculate melt weight and furnace heats required\n(270 kg per furnace)',
+                    Text(
+                      'Calculate melt weight and furnace heats required\n($capacityText kg per furnace)',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.white.withValues(alpha: 0.85),
                     ),
@@ -140,6 +147,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => const SavedGroupsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  AppNavigationCard(
+                    icon: Icons.settings_outlined,
+                    title: 'Settings',
+                    subtitle: 'Furnace capacity and app preferences',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(),
                         ),
                       );
                     },

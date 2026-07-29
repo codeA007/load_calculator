@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/load_group.dart';
+import '../../providers/settings_provider.dart';
 import '../../providers/load_groups_provider.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/empty_state_view.dart';
@@ -48,6 +49,8 @@ class _SavedGroupsScreenState extends State<SavedGroupsScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<LoadGroupsProvider>();
+    final furnaceCapacity =
+        context.watch<SettingsProvider>().furnaceCapacityKg;
 
     return Scaffold(
       appBar: AppBar(
@@ -83,7 +86,10 @@ class _SavedGroupsScreenState extends State<SavedGroupsScreen> {
                             group.name,
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
-                          subtitle: Text(formatGroupSubtitle(group)),
+                          subtitle: Text(formatGroupSubtitle(
+                            group,
+                            furnaceCapacity,
+                          )),
                           trailing: PopupMenuButton<String>(
                             onSelected: (value) async {
                               if (value == 'delete') {

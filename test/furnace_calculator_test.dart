@@ -10,6 +10,16 @@ void main() {
   test('heatsRequired calculates decimal furnace heats', () {
     expect(FurnaceCalculator.heatsRequired(270), 1);
     expect(FurnaceCalculator.heatsRequired(135), 0.5);
-    expect(FurnaceCalculator.heatsRequired(450), closeTo(1.67, 0.01));
+    expect(
+      FurnaceCalculator.heatsRequired(450),
+      closeTo(1.67, 0.01),
+    );
+  });
+
+  test('heatsRequired uses custom capacity', () {
+    expect(
+      FurnaceCalculator.heatsRequired(300, capacityKg: 150),
+      2,
+    );
   });
 }

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/part.dart';
+import '../../providers/settings_provider.dart';
 import '../../providers/calculator_provider.dart';
 import '../../providers/load_groups_provider.dart';
 import '../../providers/parts_provider.dart';
@@ -120,7 +121,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     }
   }
 
-  Widget? _buildPreviewChip(CalculatorProvider calculator) {
+  Widget? _buildPreviewChip(
+    CalculatorProvider calculator,
+    double furnaceCapacityKg,
+  ) {
     final part = _selectedPart;
     final quantity = _pendingQuantity;
     if (part == null || quantity == null) {
@@ -129,7 +133,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     final addedWeight = part.weightKg * quantity;
     final newTotal = calculator.grandTotal + addedWeight;
-    final newHeats = FurnaceCalculator.heatsRequired(newTotal);
+    final newHeats = FurnaceCalculator.heatsRequired(
+      newTotal,
+      capacityKg: furnaceCapacityKg,
+    );
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -168,6 +175,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   Widget build(BuildContext context) {
     final partsCount = context.watch<PartsProvider>().partsCount;
     final calculator = context.watch<CalculatorProvider>();
+    final furnaceCapacity =
+        context.watch<SettingsProvider>().furnaceCapacityKg;
 
     if (partsCount == 0) {
       return Scaffold(
@@ -252,9 +261,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         ),
                       ],
                     ),
-                    if (_buildPreviewChip(calculator) != null) ...[
+                    if (_buildPreviewChip(calculator, furnaceCapacity) !=
+                        null) ...[
                       const SizedBox(height: 12),
-                      _buildPreviewChip(calculator)!,
+                      _buildPreviewChip(calculator, furnaceCapacity)!,
                     ],
                   ],
                 ),
@@ -295,6 +305,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           if (calculator.lineItems.isNotEmpty)
             FurnaceSummaryPanel(
               totalWeightKg: calculator.grandTotal,
+              furnaceCapacityKg: furnaceCapacity,
               lineItemCount: calculator.lineItems.length,
               showSaveButton: true,
               compact: true,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/load_group.dart';
 import '../../models/part.dart';
+import '../../providers/settings_provider.dart';
 import '../../providers/load_groups_provider.dart';
 import '../../providers/parts_provider.dart';
 import '../../widgets/add_part_section.dart';
@@ -181,6 +182,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                                     ),
                                     FurnaceSummaryPanel(
                                       totalWeightKg: group.totalWeightKg,
+                                      furnaceCapacityKg: context
+                                          .watch<SettingsProvider>()
+                                          .furnaceCapacityKg,
                                       lineItemCount: group.items.length,
                                       compact: true,
                                     ),

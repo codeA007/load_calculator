@@ -4,10 +4,12 @@ import 'package:provider/provider.dart';
 import 'providers/calculator_provider.dart';
 import 'providers/load_groups_provider.dart';
 import 'providers/parts_provider.dart';
+import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const LoadCalculatorApp());
 }
 
@@ -18,6 +20,9 @@ class LoadCalculatorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(
+          create: (_) => SettingsProvider()..load(),
+        ),
         ChangeNotifierProvider(create: (_) => PartsProvider()),
         ChangeNotifierProvider(create: (_) => CalculatorProvider()),
         ChangeNotifierProvider(create: (_) => LoadGroupsProvider()),

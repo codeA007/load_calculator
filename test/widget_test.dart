@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:load_calculator/providers/calculator_provider.dart';
 import 'package:load_calculator/providers/load_groups_provider.dart';
 import 'package:load_calculator/providers/parts_provider.dart';
+import 'package:load_calculator/providers/settings_provider.dart';
 import 'package:load_calculator/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -22,11 +23,25 @@ class _FakeLoadGroupsProvider extends LoadGroupsProvider {
   Future<void> refreshCount() async {}
 }
 
+class _FakeSettingsProvider extends SettingsProvider {
+  @override
+  double get furnaceCapacityKg => SettingsProvider.defaultFurnaceCapacityKg;
+
+  @override
+  bool get isLoaded => true;
+
+  @override
+  Future<void> load() async {}
+}
+
 void main() {
   testWidgets('Home screen shows main actions', (WidgetTester tester) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
+          ChangeNotifierProvider<SettingsProvider>.value(
+            value: _FakeSettingsProvider(),
+          ),
           ChangeNotifierProvider<PartsProvider>.value(
             value: _FakePartsProvider(),
           ),
@@ -44,6 +59,13 @@ void main() {
     expect(find.text('Parts Library'), findsOneWidget);
     expect(find.text('Furnace Calculator'), findsOneWidget);
     expect(find.text('Saved Groups'), findsOneWidget);
-    expect(find.text('Version 1.2.1'), findsOneWidget);
+    expect(find.text('Version 1.2.2'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Settings'),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Settings'), findsOneWidget);
   });
 }

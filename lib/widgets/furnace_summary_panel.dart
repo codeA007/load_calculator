@@ -8,6 +8,7 @@ class FurnaceSummaryPanel extends StatelessWidget {
   const FurnaceSummaryPanel({
     super.key,
     required this.totalWeightKg,
+    required this.furnaceCapacityKg,
     this.lineItemCount,
     this.onSave,
     this.showSaveButton = false,
@@ -15,6 +16,7 @@ class FurnaceSummaryPanel extends StatelessWidget {
   });
 
   final double totalWeightKg;
+  final double furnaceCapacityKg;
   final int? lineItemCount;
   final VoidCallback? onSave;
   final bool showSaveButton;
@@ -25,20 +27,26 @@ class FurnaceSummaryPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (compact) {
-      return _CompactPanel(
-        totalWeightKg: totalWeightKg,
-        lineItemCount: lineItemCount,
-        onSave: onSave,
-        showSaveButton: showSaveButton,
-      );
-    }
+    final panel = compact
+        ? _CompactPanel(
+            totalWeightKg: totalWeightKg,
+            furnaceCapacityKg: furnaceCapacityKg,
+            lineItemCount: lineItemCount,
+            onSave: onSave,
+            showSaveButton: showSaveButton,
+          )
+        : _ExpandedPanel(
+            totalWeightKg: totalWeightKg,
+            furnaceCapacityKg: furnaceCapacityKg,
+            lineItemCount: lineItemCount,
+            onSave: onSave,
+            showSaveButton: showSaveButton,
+          );
 
-    return _ExpandedPanel(
-      totalWeightKg: totalWeightKg,
-      lineItemCount: lineItemCount,
-      onSave: onSave,
-      showSaveButton: showSaveButton,
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.only(bottom: 8),
+      child: panel,
     );
   }
 }
@@ -46,12 +54,14 @@ class FurnaceSummaryPanel extends StatelessWidget {
 class _CompactPanel extends StatelessWidget {
   const _CompactPanel({
     required this.totalWeightKg,
+    required this.furnaceCapacityKg,
     this.lineItemCount,
     this.onSave,
     this.showSaveButton = false,
   });
 
   final double totalWeightKg;
+  final double furnaceCapacityKg;
   final int? lineItemCount;
   final VoidCallback? onSave;
   final bool showSaveButton;
@@ -59,70 +69,74 @@ class _CompactPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final heats = FurnaceCalculator.heatsRequired(totalWeightKg);
+    final heats = FurnaceCalculator.heatsRequired(
+      totalWeightKg,
+      capacityKg: furnaceCapacityKg,
+    );
+    final capacityLabel = '${furnaceCapacityKg.toStringAsFixed(
+      furnaceCapacityKg == furnaceCapacityKg.roundToDouble() ? 0 : 1,
+    )} kg each';
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: theme.dividerColor)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              _CompactStat(
-                icon: Icons.scale_outlined,
-                label: 'Weight',
-                value: '${FurnaceSummaryPanel._weightFormat.format(totalWeightKg)} kg',
-                color: theme.colorScheme.primary,
-              ),
-              Container(
-                width: 1,
-                height: 36,
-                color: theme.dividerColor,
-                margin: const EdgeInsets.symmetric(horizontal: 10),
-              ),
-              _CompactStat(
-                icon: Icons.local_fire_department_outlined,
-                label: 'Furnace Heats',
-                value: FurnaceSummaryPanel._heatFormat.format(heats),
-                subtitle: '270 kg each',
-                color: AppTheme.furnaceAmber,
+    return Material(
+      color: Colors.white,
+      elevation: 8,
+      shadowColor: Colors.black.withValues(alpha: 0.08),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                _CompactStat(
+                  icon: Icons.scale_outlined,
+                  label: 'Weight',
+                  value:
+                      '${FurnaceSummaryPanel._weightFormat.format(totalWeightKg)} kg',
+                  color: theme.colorScheme.primary,
+                ),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: theme.dividerColor,
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                ),
+                _CompactStat(
+                  icon: Icons.local_fire_department_outlined,
+                  label: 'Furnace Heats',
+                  value: FurnaceSummaryPanel._heatFormat.format(heats),
+                  subtitle: capacityLabel,
+                  color: AppTheme.furnaceAmber,
+                ),
+              ],
+            ),
+            if (lineItemCount != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                '$lineItemCount line item(s)',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
-          ),
-          if (lineItemCount != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              '$lineItemCount line item(s)',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+            if (showSaveButton && onSave != null) ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: onSave,
+                  icon: const Icon(Icons.save_outlined, size: 18),
+                  label: const Text('Save Group'),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 44),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
               ),
-            ),
+            ],
           ],
-          if (showSaveButton && onSave != null) ...[
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 38,
-              child: FilledButton.icon(
-                onPressed: onSave,
-                icon: const Icon(Icons.save_outlined, size: 18),
-                label: const Text('Save Group'),
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
@@ -189,12 +203,14 @@ class _CompactStat extends StatelessWidget {
 class _ExpandedPanel extends StatelessWidget {
   const _ExpandedPanel({
     required this.totalWeightKg,
+    required this.furnaceCapacityKg,
     this.lineItemCount,
     this.onSave,
     this.showSaveButton = false,
   });
 
   final double totalWeightKg;
+  final double furnaceCapacityKg;
   final int? lineItemCount;
   final VoidCallback? onSave;
   final bool showSaveButton;
@@ -202,15 +218,16 @@ class _ExpandedPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final heats = FurnaceCalculator.heatsRequired(totalWeightKg);
+    final heats = FurnaceCalculator.heatsRequired(
+      totalWeightKg,
+      capacityKg: furnaceCapacityKg,
+    );
+    final capacityLabel = '${furnaceCapacityKg.toStringAsFixed(
+      furnaceCapacityKg == furnaceCapacityKg.roundToDouble() ? 0 : 1,
+    )} kg per furnace';
 
-    return Container(
-      width: double.infinity,
+    return Padding(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: theme.dividerColor)),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -231,7 +248,7 @@ class _ExpandedPanel extends StatelessWidget {
                   icon: Icons.local_fire_department_outlined,
                   label: 'Furnace Heats',
                   value: FurnaceSummaryPanel._heatFormat.format(heats),
-                  subtitle: '270 kg per furnace',
+                  subtitle: capacityLabel,
                   color: AppTheme.furnaceAmber,
                 ),
               ),
@@ -248,10 +265,16 @@ class _ExpandedPanel extends StatelessWidget {
           ],
           if (showSaveButton && onSave != null) ...[
             const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: onSave,
-              icon: const Icon(Icons.save_outlined),
-              label: const Text('Save Group'),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: onSave,
+                icon: const Icon(Icons.save_outlined),
+                label: const Text('Save Group'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 44),
+                ),
+              ),
             ),
           ],
         ],
