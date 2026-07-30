@@ -95,6 +95,18 @@ class LoadGroupsRepository {
     return updated!;
   }
 
+  Future<LoadGroup> deleteItemFromGroup(int groupId, int itemId) async {
+    final group = await _databaseHelper.getLoadGroupById(groupId);
+    if (group == null) {
+      throw StateError('Group not found');
+    }
+
+    await _databaseHelper.deleteLoadGroupItem(itemId, groupId);
+
+    final updated = await _databaseHelper.getLoadGroupById(groupId);
+    return updated!;
+  }
+
   Future<void> deleteGroup(int id) {
     return _databaseHelper.deleteLoadGroup(id);
   }

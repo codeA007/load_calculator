@@ -9,9 +9,11 @@ class LoadGroupItemTile extends StatelessWidget {
   const LoadGroupItemTile({
     super.key,
     required this.item,
+    this.onRemove,
   });
 
   final LoadGroupItem item;
+  final VoidCallback? onRemove;
 
   static final _weightFormat = NumberFormat('#,##0.###');
 
@@ -34,7 +36,8 @@ class LoadGroupItemTile extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (item.description != null && item.description!.isNotEmpty) ...[
+                if (item.description != null &&
+                    item.description!.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
                     item.description!,
@@ -54,11 +57,23 @@ class LoadGroupItemTile extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            '${_weightFormat.format(item.lineWeightKg)} kg',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${_weightFormat.format(item.lineWeightKg)} kg',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (onRemove != null)
+                IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  tooltip: 'Remove',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onRemove,
+                ),
+            ],
           ),
         ],
       ),

@@ -62,6 +62,12 @@ class LoadGroupsProvider extends ChangeNotifier {
     return group;
   }
 
+  Future<LoadGroup> deleteItemFromGroup(int groupId, int itemId) async {
+    final group = await _repository.deleteItemFromGroup(groupId, itemId);
+    await loadGroups();
+    return group;
+  }
+
   Future<void> deleteGroup(int id) async {
     await _repository.deleteGroup(id);
     await loadGroups();

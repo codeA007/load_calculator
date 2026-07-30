@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/load_group.dart';
+import '../../models/load_group_item.dart';
 import '../../models/part.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/load_groups_provider.dart';
 import '../../providers/parts_provider.dart';
 import '../../widgets/add_part_section.dart';
+import '../../widgets/confirm_dialog.dart';
 import '../../widgets/furnace_summary_panel.dart';
 import '../../widgets/load_group_item_tile.dart';
 
@@ -114,6 +116,43 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
     }
   }
 
+  Future<void> _deleteItem(LoadGroupItem item) async {
+    if (item.id == null) {
+      return;
+    }
+
+    final confirmed = await showConfirmDialog(
+      context: context,
+      title: 'Remove Part',
+      message: 'Remove ${item.partNo} from this group?',
+      confirmLabel: 'Remove',
+      isDestructive: true,
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    try {
+      final updated = await context
+          .read<LoadGroupsProvider>()
+          .deleteItemFromGroup(widget.groupId, item.id!);
+      if (!mounted) {
+        return;
+      }
+      setState(() => _group = updated);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Removed ${item.partNo}')),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to remove: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final group = _group;
@@ -205,8 +244,10 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
 
                               final itemIndex =
                                   index - 1 - (_showAddPart ? 1 : 0);
+                              final item = group.items[itemIndex];
                               return LoadGroupItemTile(
-                                item: group.items[itemIndex],
+                                item: item,
+                                onRemove: () => _deleteItem(item),
                               );
                             },
                           ),
