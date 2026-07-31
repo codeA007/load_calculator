@@ -59,7 +59,7 @@ void main() {
     expect(find.text('Parts Library'), findsOneWidget);
     expect(find.text('Furnace Calculator'), findsOneWidget);
     expect(find.text('Saved Groups'), findsOneWidget);
-    expect(find.text('Version 1.2.3'), findsOneWidget);
+    expect(find.text('Version 1.2.4'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.text('Settings'),
